@@ -1,0 +1,42 @@
+ls -l -> Muestra una lista con los archivos del directorio
+ls -l > "nombre_texto.txt" ->se adjunta lo que se encuentra en la carpeta
+ls -l >> "nombre_texto.txt" ->se adjunta lo que se encuentra en la carpeta + agrega
+cat "archivo.txt" -> muestra lo que está en el archivo "archivo.txt"
+grep "frase" "nombre_archivo.txt" -> busca la frase "frase" en el archivo de texto "nombre_archivo.txt"
+
+Pipes:
+
+ls -l | grep -i nov ->utiliza grep en la dirección actual para encontrar la palabra "nov"
+
+chmod +x "nombre_archivo" -> permiteacceso a ejecucion al archivo de texto
+
+
+./ "archivo.sh" -> activa el archivo "archivo.sh"
+
+AWK
+
+ls -l | awk {'print $1 $2 $3'}
+
+-----------------------trozo de código------------------------
+            for linea in $(cat /etc/passwd);do
+                substring=$(echo $linea | cut -d':' -f 3)
+                if [[ $substring = $uid ]];then
+                    name_uid=$(echo $linea | cut -d':' -f 1)
+                    cmdline=$(echo $linea | cut -d':' -f 1)
+                    break
+                fi
+            done
+
+----------------------------------------------------------------
+    while read linea;do
+        
+        if [[ $cont -gt 0 ]];then
+
+            SourcePort=$( echo $linea | cut -f1-2)
+            DestinationPort=$( echo $linea | cut -f2-3)
+            echo $linea        
+            echo "Sc: $SourcePort\nDp:$DestinationPort"
+        fi
+        cont=$cont+1
+    done < /proc/net/tcp
+
