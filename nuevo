@@ -1,0 +1,136 @@
+#!/bin/bash
+
+function funcionip {
+
+    num="^[0-9]+$"
+    ip=$(echo $1 | cut -d':' -f 1)
+    puerto=$(echo $1 | cut -d':' -f 2)
+    #ip=$(echo $ip | cut -f 6)
+
+    echo "seria: $ip $puerto"
+    #first=$(echo $1 | obase=10; obase=16; $1/100)
+    #second=
+    #third=
+    #fourth=
+
+}
+
+
+echo "Ingresa la opcion"
+read opcion #Se lee la opcion ingresada por el usuario
+
+cd /proc
+if [[ $opcion -eq 1 ]];then 
+#En el caso de que el usuario no haya ingresado ningun parametro
+#Se ejecutara la primera opcion de la tarea
+    model_name=$(cat cpuinfo | grep "model name" | awk '{ print $4,$5,$6,$7,$9}')
+    #con cat se 
+    uptime=$(cat uptime | awk '{ printf "%0.3f\n",$1/60/60/24}')
+    verison=$(cat version | awk '{ printf $3}')
+    memTotal=$(cat meminfo | grep MemTotal | awk '{printf "%0.3f GB\n",$2/1048576 }')
+
+    echo "model name: " $model_name
+    echo "uptime: " $uptime " dias"
+    echo "version: " $verison
+    echo "memTotal: " $memTotal
+
+fi
+
+#var=$(ls)
+
+cd /proc
+
+if [[ $opcion = "-ps" ]];then
+
+    echo "UID    PID    PPID    Status       CMD"
+
+    for directorio in $(ls);do
+        num="^[0-9]+$"
+        
+        #echo "El directorio actual es:" $directorio
+        if [[ $directorio =~ $num ]] && [[ -d $directorio ]];then
+
+            direction="/proc/$directorio/status"
+
+            #cmdline=$( cat /proc/$directorio/cmdline | awk '{ print $1 }')
+            status=$( cat $direction | grep State | awk '{ print $3 }')
+            pid=$directorio
+            ppid=$( cat $direction | grep PPid | awk '{ print $2 }')
+            uid=$( cat $direction | grep Uid | awk '{ print $2}')
+
+            #echo "$uid    $pid    $ppid     $status     $cmdline"
+
+            for linea in $(cat /etc/passwd);do
+                substring=$(echo $linea | cut -d':' -f 3)
+                #echo $substring $linea $uid
+                if [[ $substring = $uid ]];then
+                    name_uid=$(echo $linea | cut -d':' -f 1)
+                    cmdline=$(echo $linea | cut -d':' -f 7)
+                    #echo $cmdline2 $name_uid
+                    break
+                fi
+            done
+
+            echo "$name_uid    $pid    $ppid     $status     $cmdline"
+            
+            #echo "CMD: $cmdline"            
+            #echo "Estado: $status"
+            #echo "Pid: $pid"
+            #echo "ppid: $ppid"
+            #echo "uid: $uid"
+
+
+        fi
+
+    done
+fi
+
+if [[ $opcion = "-psBlocked" ]];then
+
+    Bloqueados=$(cat /proc/locks)
+
+    while IFS= read -r linea
+    do
+        echo $linea
+    done < /proc/locks
+    #for linea in $Bloqueados;do
+    #for ((i=0;i<=3;i++));do
+    #    echo $linea
+    #done
+
+fi
+
+cd /proc
+
+if [[ $opcion = "-m" ]];then
+    direccion="/proc/meminfo"
+    memoriaT=$(cat $direccion | grep MemTotal | awk '{ printf "%0.1f" ,$2/1048576}')
+    memoriaA=$(cat $direccion | grep MemAvailable | awk '{ printf "%0.1f" ,$2/1048576}')
+    echo "Total        Available"
+    echo " $memoriaT            $memoriaA"
+
+fi
+
+if [[ $opcion = "-tcp" ]];then
+    direccion="/proc/net/tcp"
+    cont=0
+
+    while IFS= read -r linea
+    do
+        #if( $cont -eq 0 );then
+            columna1=$(echo $linea | cut -d' ' -f 2)
+            columna2=$(echo $linea | cut -d' ' -f 3)
+
+            funcionip $columna1
+
+            #echo "$columna1 $columna2"
+        #fi
+    done < $direccion
+
+    #SourcePort=$(cat $direccion | grep MemTotal | awk '{ print $1}')
+    #DestinationPort=$(cat $direccion | grep MemAvailable | awk '{ print $2}')
+
+    #echo "La memoria total es: $SourcePort"
+    #echo "La memoria disponible es: $DestinationPort"
+
+fi
